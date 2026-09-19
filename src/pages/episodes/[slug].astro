@@ -1,0 +1,44 @@
+---
+import Base from '../../layouts/Base.astro';
+import Player from '../../components/Player.astro';
+import { getShow } from '../../lib/feed.js';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const show = await getShow();
+  return show.episodes.map((ep) => ({ params: { slug: ep.slug }, props: { ep } }));
+}
+
+const { ep } = Astro.props;
+const transcripts = await getCollection('transcripts');
+const transcript = transcripts.find((t) => t.data.episode === ep.slug);
+const Transcript = transcript ? (await transcript.render()).Content : null;
+---
+<Base title={ep.title} description={ep.summary.slice(0, 180)} image={ep.image || '/img/cover.jpg'} page="episodes">
+  <article class="hero">
+    <div class="hero-main">
+      <div class="kicker">
+        <span class="muted">Episode {ep.num} · {ep.dateLabel} · {ep.duration}</span>
+      </div>
+      <h1>{ep.title}</h1>
+      <Player episode={ep} />
+      <div class="section-head tight"><h6>About this one</h6><span class="rule"></span></div>
+      <div class="prose" set:html={ep.html} />
+
+      {Transcript && (
+        <details class="transcript">
+          <summary>Full transcript</summary>
+          <div class="prose"><Transcript /></div>
+        </details>
+      )}
+    </div>
+
+    <aside class="hero-side">
+      <img class="cover" src={ep.image || '/img/cover.jpg'} alt="">
+      <div class="subscribe">
+        <a class="btn btn-secondary btn-block" href={ep.podbeanUrl}>Open on Podbean</a>
+        <a class="btn btn-ghost" href="/episodes/">← All episodes</a>
+      </div>
+    </aside>
+  </article>
+</Base>

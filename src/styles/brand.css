@@ -1,0 +1,42 @@
+/* 3 Guys in a Basement — brand tuning for Nocturne.
+   Same system, retuned to the cover art: basement navy ground, bulb-orange accent,
+   cream ink, teal as the secondary mark. Ramps follow Nocturne's OKLCH lightness
+   steps so every component keeps its intended weight. */
+:root {
+  --color-bg: #14202e;
+  --color-text: #f3ede2;
+  --color-surface: #1b2c3d;
+  --color-divider: #2a3d51;
+  --color-section: #10333f;
+
+  --color-neutral-100: #f3ede2;
+  --color-neutral-200: #dfd8cd;
+  --color-neutral-300: #c3bcb2;
+  --color-neutral-400: #9aa3ad;
+  --color-neutral-500: #7d8994;
+  --color-neutral-600: #5d6b78;
+  --color-neutral-700: #40505f;
+  --color-neutral-800: #2a3d51;
+  --color-neutral-900: #1b2c3d;
+
+  --color-accent: #ef7a2c;
+  --color-accent-100: #fde3cf;
+  --color-accent-200: #fac59f;
+  --color-accent-300: #f5a570;
+  --color-accent-400: #f28f4d;
+  --color-accent-500: #ef7a2c;
+  --color-accent-600: #d2641d;
+  --color-accent-700: #a94f16;
+  --color-accent-800: #7c3a11;
+  --color-accent-900: #4f250b;
+
+  --color-accent-2-100: #d8f2f5;
+  --color-accent-2-200: #a9e3ea;
+  --color-accent-2-300: #7ad2dd;
+  --color-accent-2-400: #4ec3ce;
+  --color-accent-2-500: #35a8b4;
+  --color-accent-2-600: #2a8894;
+  --color-accent-2-700: #1f6874;
+  --color-accent-2-800: #164c56;
+  --color-accent-2-900: #0e3138;
+}

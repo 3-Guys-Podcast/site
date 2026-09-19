@@ -1,0 +1,61 @@
+---
+import '../styles/nocturne.css';
+import '../styles/brand.css';
+import '../styles/site.css';
+
+const { title, description, image = '/img/cover.jpg', page = '' } = Astro.props;
+const site = '3 Guys in a Basement';
+const full = title ? title + ' — ' + site : site;
+const url = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.pathname;
+const nav = [
+  { href: '/episodes/', label: 'Episodes', key: 'episodes' },
+  { href: '/about/', label: 'About', key: 'about' },
+  { href: '/blog/', label: 'Blog', key: 'blog' },
+  { href: '/submit/', label: 'Submit', key: 'submit' },
+];
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{full}</title>
+  <meta name="description" content={description}>
+  <link rel="canonical" href={url}>
+  <link rel="icon" href="/img/cover.jpg">
+  <link rel="alternate" type="application/rss+xml" title={site} href="https://feed.podbean.com/ThreeGuysBasement/feed.xml">
+  <meta property="og:title" content={full}>
+  <meta property="og:description" content={description}>
+  <meta property="og:image" content={new URL(image, Astro.site || url).href}>
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <!-- Cloudflare Web Analytics: paste your token, then uncomment.
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "YOUR_TOKEN"}'></script>
+  -->
+</head>
+<body class="ds-nocturne">
+  <header class="nav site-nav">
+    <a class="nav-brand brand" href="/">
+      <img src="/img/cover.jpg" alt="" width="34" height="34">
+      <span>3 Guys in a Basement</span>
+    </a>
+    <nav class="nav-links">
+      {nav.map((n) => (
+        <a href={n.href} aria-current={page === n.key ? 'page' : undefined}>{n.label}</a>
+      ))}
+    </nav>
+  </header>
+
+  <main><slot /></main>
+
+  <footer class="site-footer">
+    <span class="mark"></span>
+    <span>3guys.chat</span>
+    <a href="https://feed.podbean.com/ThreeGuysBasement/feed.xml">RSS</a>
+    <span class="spacer"></span>
+    <span>Three Guys Radio · Chicago suburbs</span>
+  </footer>
+</body>
+</html>

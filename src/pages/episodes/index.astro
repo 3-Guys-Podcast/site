@@ -1,0 +1,27 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getShow } from '../../lib/feed.js';
+
+const show = await getShow();
+---
+<Base title="Episodes" description={'Every episode of ' + show.title + ', with timestamped topic lists.'} page="episodes">
+  <section class="pad">
+    <h1>Episodes</h1>
+    <p class="lead narrow">They run long. Every episode with a chapter file gets a topic list you can jump around in.</p>
+
+    <div class="ep-head">
+      <span>No.</span><span>Episode</span><span>Released</span><span class="r">Length</span>
+    </div>
+    {show.episodes.map((ep) => (
+      <a class="ep-row" href={'/episodes/' + ep.slug + '/'}>
+        <span class="n">{ep.num}</span>
+        <span>
+          <span class="t">{ep.title}</span>
+          <span class="muted s">{ep.summary.slice(0, 110)}… · {ep.chapterNote}</span>
+        </span>
+        <span class="muted">{ep.dateLabel}</span>
+        <span class="muted r">{ep.duration}</span>
+      </a>
+    ))}
+  </section>
+</Base>

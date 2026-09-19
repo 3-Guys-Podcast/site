@@ -1,0 +1,146 @@
+---
+const { episode } = Astro.props;
+const { audio, chapters, duration, seconds, guid, title } = episode;
+---
+<div class="player" data-player data-key={guid} data-duration={seconds}>
+  <div class="resume" data-resume hidden>
+    <span class="mark"></span>
+    <span class="resume-text">You left off partway through this one.</span>
+    <button class="btn btn-primary" type="button" data-resume-go>Resume</button>
+    <button class="btn btn-ghost" type="button" data-resume-dismiss>Dismiss</button>
+  </div>
+
+  <div class="player-row">
+    <button class="btn btn-primary btn-icon play" type="button" data-play aria-label={'Play ' + title}>
+      <svg width="13" height="13" viewBox="0 0 12 12" aria-hidden="true" data-icon-play><polygon points="2,0.5 11,6 2,11.5" fill="currentColor"></polygon></svg>
+      <svg width="13" height="13" viewBox="0 0 12 12" aria-hidden="true" data-icon-pause hidden><rect x="2" y="1" width="3" height="10" fill="currentColor"></rect><rect x="7" y="1" width="3" height="10" fill="currentColor"></rect></svg>
+    </button>
+    <div class="player-bar">
+      <div class="track" data-track role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax={seconds} aria-valuenow="0">
+        <div class="fill" data-fill></div>
+      </div>
+      <div class="times">
+        <span data-current>0:00</span>
+        <span>{duration}</span>
+      </div>
+    </div>
+    <div class="rates">
+      <button class="btn btn-ghost rate" type="button" data-rate="1">1×</button>
+      <button class="btn btn-ghost rate" type="button" data-rate="1.25">1.25×</button>
+      <button class="btn btn-ghost rate" type="button" data-rate="1.5">1.5×</button>
+    </div>
+  </div>
+
+  <audio preload="metadata" src={audio} data-audio></audio>
+
+  {chapters.length > 0 && (
+    <div class="section-head tight">
+      <h6>What we covered</h6><span class="rule"></span>
+      <span class="muted tiny">Times are links</span>
+    </div>
+  )}
+
+  {chapters.length > 0 && (
+    <ol class="chapters" data-chapters>
+      {chapters.map((c) => (
+        <li>
+          <button type="button" data-seek={c.start}>
+            <span class="dot"></span>
+            <span class="t">{c.label}</span>
+            <span class="c">{c.title}</span>
+          </button>
+        </li>
+      ))}
+    </ol>
+  )}
+</div>
+
+<script>
+  document.querySelectorAll('[data-player]').forEach((root) => {
+    const audio = root.querySelector('[data-audio]');
+    const playBtn = root.querySelector('[data-play]');
+    const iconPlay = root.querySelector('[data-icon-play]');
+    const iconPause = root.querySelector('[data-icon-pause]');
+    const fill = root.querySelector('[data-fill]');
+    const track = root.querySelector('[data-track]');
+    const current = root.querySelector('[data-current]');
+    const resume = root.querySelector('[data-resume]');
+    const seeks = [...root.querySelectorAll('[data-seek]')];
+    const key = 'tgb:pos:' + root.dataset.key;
+    const total = Number(root.dataset.duration) || 0;
+
+    const fmt = (s) => {
+      s = Math.max(0, Math.round(s || 0));
+      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60;
+      const mm = h ? String(m).padStart(2, '0') : String(m);
+      return (h ? h + ':' : '') + mm + ':' + String(x).padStart(2, '0');
+    };
+
+    let saved = 0;
+    try { saved = Number(localStorage.getItem(key)) || 0; } catch {}
+    if (saved > 30 && (!total || saved < total - 30)) {
+      resume.hidden = false;
+      resume.querySelector('[data-resume-go]').textContent = 'Resume at ' + fmt(saved);
+    }
+
+    const paint = () => {
+      const t = audio.currentTime;
+      const d = audio.duration || total;
+      if (d) fill.style.width = (t / d) * 100 + '%';
+      current.textContent = fmt(t);
+      track.setAttribute('aria-valuenow', String(Math.round(t)));
+      let active = -1;
+      seeks.forEach((b, i) => { if (Number(b.dataset.seek) <= t) active = i; });
+      seeks.forEach((b, i) => b.classList.toggle('is-current', i === active));
+    };
+
+    const go = (t) => { audio.currentTime = t; paint(); };
+
+    playBtn.addEventListener('click', () => (audio.paused ? audio.play() : audio.pause()));
+    audio.addEventListener('play', () => { iconPlay.hidden = true; iconPause.hidden = false; resume.hidden = true; });
+    audio.addEventListener('pause', () => { iconPlay.hidden = false; iconPause.hidden = true; });
+    audio.addEventListener('timeupdate', paint);
+    audio.addEventListener('loadedmetadata', paint);
+
+    let tick = 0;
+    audio.addEventListener('timeupdate', () => {
+      if (Date.now() - tick < 4000) return;
+      tick = Date.now();
+      try { localStorage.setItem(key, String(Math.floor(audio.currentTime))); } catch {}
+    });
+    window.addEventListener('pagehide', () => {
+      try { localStorage.setItem(key, String(Math.floor(audio.currentTime))); } catch {}
+    });
+
+    resume.querySelector('[data-resume-go]').addEventListener('click', () => {
+      resume.hidden = true; go(saved); audio.play();
+    });
+    resume.querySelector('[data-resume-dismiss]').addEventListener('click', () => {
+      resume.hidden = true;
+      try { localStorage.removeItem(key); } catch {}
+    });
+
+    seeks.forEach((b) => b.addEventListener('click', () => { go(Number(b.dataset.seek)); audio.play(); }));
+
+    track.addEventListener('click', (e) => {
+      const r = track.getBoundingClientRect();
+      const d = audio.duration || total;
+      if (d) go(((e.clientX - r.left) / r.width) * d);
+    });
+    track.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { go(audio.currentTime + 15); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { go(audio.currentTime - 15); e.preventDefault(); }
+    });
+
+    root.querySelectorAll('[data-rate]').forEach((b) => {
+      b.addEventListener('click', () => {
+        audio.playbackRate = Number(b.dataset.rate);
+        root.querySelectorAll('[data-rate]').forEach((o) => o.classList.toggle('is-current', o === b));
+      });
+    });
+
+    // Deep link: /episodes/slug/?t=2507
+    const t = new URLSearchParams(location.search).get('t');
+    if (t) go(Number(t));
+  });
+</script>

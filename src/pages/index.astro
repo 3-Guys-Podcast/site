@@ -1,0 +1,49 @@
+---
+import Base from '../layouts/Base.astro';
+import Player from '../components/Player.astro';
+import { getShow } from '../lib/feed.js';
+
+const show = await getShow();
+const [latest, ...earlier] = show.episodes;
+---
+<Base title="" description={show.description} page="home">
+  <section class="hero">
+    <div class="hero-main">
+      <div class="kicker">
+        <span>Latest</span><span class="rule"></span>
+        <span class="muted">Episode {latest.num} · {latest.dateLabel} · {latest.duration}</span>
+      </div>
+      <h1><a href={'/episodes/' + latest.slug + '/'}>{latest.title}</a></h1>
+      <div class="prose" set:html={latest.html} />
+      <Player episode={latest} />
+    </div>
+
+    <aside class="hero-side">
+      <img class="cover" src="/img/cover.jpg" alt="3 Guys in a Basement cover art">
+      <div class="subscribe">
+        <a class="btn btn-primary btn-block" href={show.link}>Apple Podcasts</a>
+        <a class="btn btn-primary btn-block" href={show.link}>Spotify</a>
+        <a class="btn btn-ghost" href="https://feed.podbean.com/ThreeGuysBasement/feed.xml">RSS, and every other app →</a>
+      </div>
+    </aside>
+  </section>
+
+  <section class="band"><p>{show.description}</p></section>
+
+  <section class="pad">
+    <div class="section-head">
+      <h6>Earlier</h6><span class="rule"></span>
+      <a class="btn btn-ghost" href="/episodes/">All episodes →</a>
+    </div>
+    <div class="cards">
+      {earlier.map((ep) => (
+        <a class="card elev-sm" href={'/episodes/' + ep.slug + '/'}>
+          <span class="card-kicker">{ep.num} · {ep.dateLabel}</span>
+          <span class="card-title">{ep.title}</span>
+          <p class="card-body">{ep.summary.slice(0, 150)}…</p>
+          <span class="card-meta">{ep.duration} · {ep.chapterNote}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>

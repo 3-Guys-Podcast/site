@@ -1,0 +1,29 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date - a.data.date);
+---
+<Base title="Blog" description="Things that didn't fit in an episode." page="blog">
+  <section class="pad">
+    <h1>Blog</h1>
+    <p class="lead narrow">Things that didn't fit in an episode, or wouldn't stop after one.</p>
+    {posts.length === 0 ? (
+      <div class="empty">
+        <h4>Nothing here yet</h4>
+        <p class="muted">Posts are markdown files in <code>src/content/blog/</code>. Add one, push, and it appears.</p>
+      </div>
+    ) : (
+      <div class="cards">
+        {posts.map((p) => (
+          <a class="card elev-sm" href={'/blog/' + p.slug + '/'}>
+            <span class="card-kicker">{p.data.date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            <span class="card-title">{p.data.title}</span>
+            <p class="card-body">{p.data.summary}</p>
+          </a>
+        ))}
+      </div>
+    )}
+  </section>
+</Base>

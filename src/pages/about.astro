@@ -1,0 +1,39 @@
+---
+import Base from '../layouts/Base.astro';
+import { getShow } from '../lib/feed.js';
+
+const show = await getShow();
+const hosts = [
+  { name: 'Chris', img: '/img/host-chris.jpg', bio: 'Fire service and EMS for two decades, now a nursing student doing clinicals. Brings the homework assignments nobody asked for.' },
+  { name: 'Clint', img: '/img/host-clint.jpg', bio: 'Summers in Nestor Falls, Ontario, a standing fishing bet, and two German shorthaired pointers who steal things.' },
+  { name: 'Nick', img: '/img/host-nick.jpg', bio: 'Married to Pepper. Went to the U.P. and found a restaurant that feeds bears outside the dining room window.' },
+];
+---
+<Base title="About" description={show.description} page="about">
+  <section class="hero">
+    <div class="hero-main">
+      <h1>Three friends, a basement, and a record button</h1>
+      <p class="lead">{show.description}</p>
+      <p class="muted">Episodes run two hours and change, which is exactly why every one gets a topic list with times. If the part you want is at 1:15, go to 1:15.</p>
+    </div>
+    <aside class="hero-side"><img class="cover" src="/img/cover.jpg" alt="Cover art"></aside>
+  </section>
+
+  <section class="pad">
+    <div class="section-head"><h6>Who's in the room</h6><span class="rule"></span></div>
+    <div class="hosts">
+      {hosts.map((h) => (
+        <div class="host">
+          <img src={h.img} alt={h.name}>
+          <h4>{h.name}</h4>
+          <p class="muted">{h.bio}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="band">
+    <h6>Guests</h6>
+    <p><strong>Pepper — Episode 2.</strong> Nick's wife, a friend to all three for more than twenty years, and the first guest on the show. Named after a dog. Runs her own marketing company.</p>
+  </section>
+</Base>
