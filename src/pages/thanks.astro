@@ -1,0 +1,14 @@
+---
+// Fallback only. Reached when JavaScript is off and Formspree posts normally.
+import Base from '../layouts/Base.astro';
+---
+<Base title="Thanks" description="Your message is with us." page="submit">
+  <section class="pad">
+    <h1>Got it</h1>
+    <p class="lead narrow">It's in front of all three of us now. If we use it on the show, we'll say who sent it — unless you'd rather we didn't, in which case say so and we won't.</p>
+    <div class="submit-next" style="max-width: 320px; margin-top: var(--space-8);">
+      <a class="btn btn-secondary btn-block" href="/">Back to the latest episode</a>
+      <a class="btn btn-ghost" href="/submit/">Send another one</a>
+    </div>
+  </section>
+</Base>

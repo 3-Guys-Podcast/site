@@ -1,5 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
+import SubmitForm from '../components/SubmitForm.astro';
+import '../styles/submit.css';
 const FORMSPREE = 'https://formspree.io/f/xvkgzzgq';
 ---
 <Base title="Submit" description="Send the three of us a homework assignment, a question, or a story." page="submit">
@@ -15,32 +17,7 @@ const FORMSPREE = 'https://formspree.io/f/xvkgzzgq';
       </ol>
     </div>
     <aside class="hero-side">
-      <form class="card elev-md form" action={FORMSPREE} method="POST">
-        <div class="field">
-          <label for="type">What is this</label>
-          <select class="input" id="type" name="type">
-            <option>Homework assignment</option>
-            <option>A question for the table</option>
-            <option>A story we should tell</option>
-            <option>Guest idea</option>
-            <option>Something else</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="name">Your name</label>
-          <input class="input" id="name" name="name" placeholder="First name is plenty">
-        </div>
-        <div class="field">
-          <label for="email">Email</label>
-          <input class="input" id="email" name="email" type="email" placeholder="Only if you want an answer">
-        </div>
-        <div class="field">
-          <label for="message">Say it</label>
-          <textarea class="input" id="message" name="message" rows="5" placeholder="Two sentences beats two paragraphs." required></textarea>
-        </div>
-        <button class="btn btn-primary btn-block" type="submit">Send it to all three</button>
-        <span class="muted tiny">No account, no list. Or just email <a href="mailto:info@3guys.chat">info@3guys.chat</a>.</span>
-      </form>
+      <SubmitForm endpoint={FORMSPREE} />
     </aside>
   </section>
 </Base>

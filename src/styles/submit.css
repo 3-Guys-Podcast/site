@@ -1,0 +1,16 @@
+/* Submit success state. Scoped to the submit page; defines nothing global. */
+.submit-done { display: flex; flex-direction: column; gap: var(--space-6); padding: var(--space-8); }
+.submit-done .check { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--color-accent); color: var(--color-accent); display: grid; place-items: center; flex: none; }
+.submit-done h3 { margin: 0; }
+.submit-done p { margin: 0; font-size: 15px; color: var(--color-neutral-300); max-width: 34em; text-wrap: pretty; }
+.submit-next { display: grid; gap: var(--space-2); margin-top: var(--space-2); }
+.submit-again { background: transparent; border: 0; padding: 0; font: inherit; font-size: 13px; color: var(--color-accent-300); cursor: pointer; text-align: left; }
+.submit-again:hover { color: var(--color-accent-200); }
+.form-error { font-size: 13px; color: var(--color-accent-200); }
+.is-sending { opacity: 0.55; pointer-events: none; }
+
+@media (max-width: 680px) {
+  .form .btn-block { min-height: 46px; }
+  .form .input { min-height: 44px; }
+  .submit-next .btn { min-height: 46px; }
+}

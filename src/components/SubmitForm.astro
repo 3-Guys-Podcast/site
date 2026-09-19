@@ -1,0 +1,111 @@
+---
+// Posts to Formspree in the background. The visitor never leaves the site,
+// so audio keeps playing and their place on the page is kept.
+const { endpoint } = Astro.props;
+---
+<div class="card elev-md form" data-submit>
+  <form data-submit-form action={endpoint} method="POST">
+    <!-- Spam trap: real people never fill this in. -->
+    <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+
+    <div class="field">
+      <label for="type">What is this</label>
+      <select class="input" id="type" name="type">
+        <option>Homework assignment</option>
+        <option>A question for the table</option>
+        <option>A story we should tell</option>
+        <option>Guest idea</option>
+        <option>Something else</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="name">Your name</label>
+      <input class="input" id="name" name="name" placeholder="First name is plenty">
+    </div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input class="input" id="email" name="email" type="email" placeholder="Only if you want an answer">
+    </div>
+    <div class="field">
+      <label for="message">Say it</label>
+      <textarea class="input" id="message" name="message" rows="5" placeholder="Two sentences beats two paragraphs." required></textarea>
+    </div>
+
+    <p class="form-error" data-submit-error hidden></p>
+    <button class="btn btn-primary btn-block" type="submit" data-submit-btn>Send it to all three</button>
+    <span class="muted tiny">No account, no list. Or just email <a href="mailto:info@3guys.chat">info@3guys.chat</a>.</span>
+  </form>
+
+  <div class="submit-done" data-submit-done hidden>
+    <div class="check" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8.5 6.5 12 13 4.5"/></svg>
+    </div>
+    <div>
+      <h3>Got it</h3>
+      <p data-submit-msg>It's in front of all three of us now. If we use it on the show, we'll say who sent it — unless you'd rather we didn't, in which case say so and we won't.</p>
+    </div>
+    <div class="submit-next">
+      <a class="btn btn-secondary btn-block" href="/">Back to the latest episode</a>
+      <a class="btn btn-ghost" href="/basement-tapes/">Or browse Basement Tapes →</a>
+    </div>
+    <button class="submit-again" type="button" data-submit-again>Send another one</button>
+  </div>
+</div>
+
+<script>
+  // Re-runs after every client-side navigation (ClientRouter), once per page visit.
+  const initSubmit = () => document.querySelectorAll('[data-submit]').forEach((root) => {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const form = root.querySelector('[data-submit-form]');
+    const done = root.querySelector('[data-submit-done]');
+    const btn = root.querySelector('[data-submit-btn]');
+    const err = root.querySelector('[data-submit-error]');
+    const msg = root.querySelector('[data-submit-msg]');
+    const again = root.querySelector('[data-submit-again]');
+    if (!form) return;
+
+    // No JS? The form posts normally to Formspree and lands on /thanks/.
+    const redirect = form.querySelector('input[name="_next"]');
+    if (redirect) redirect.remove();
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.hidden = true;
+      form.classList.add('is-sending');
+      btn.textContent = 'Sending…';
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { Accept: 'application/json' },
+        });
+        if (!res.ok) throw new Error('Formspree returned ' + res.status);
+
+        const name = (form.querySelector('[name="name"]').value || '').trim();
+        if (name) msg.textContent = 'Thanks, ' + name + '. It\'s in front of all three of us now. If we use it on the show, we\'ll say who sent it — unless you\'d rather we didn\'t, in which case say so and we won\'t.';
+
+        form.hidden = true;
+        done.hidden = false;
+        done.setAttribute('tabindex', '-1');
+        done.focus({ preventScroll: true });
+      } catch {
+        err.innerHTML = 'That did not send. Try again, or email <a href="mailto:info@3guys.chat">info@3guys.chat</a> directly.';
+        err.hidden = false;
+      } finally {
+        form.classList.remove('is-sending');
+        btn.textContent = 'Send it to all three';
+      }
+    });
+
+    again.addEventListener('click', () => {
+      form.reset();
+      done.hidden = true;
+      form.hidden = false;
+      form.querySelector('#message').focus();
+    });
+  });
+  initSubmit();
+  document.addEventListener('astro:page-load', initSubmit);
+</script>
