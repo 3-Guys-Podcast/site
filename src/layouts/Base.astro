@@ -2,6 +2,9 @@
 import '../styles/nocturne.css';
 import '../styles/brand.css';
 import '../styles/site.css';
+import '../styles/miniplayer.css';
+import { ViewTransitions as ClientRouter } from 'astro:transitions';
+import MiniPlayer from '../components/MiniPlayer.astro';
 
 const { title, description, image = '/img/cover.jpg', page = '' } = Astro.props;
 const site = '3 Guys in a Basement';
@@ -36,6 +39,7 @@ const nav = [
   <!-- Cloudflare Web Analytics: paste your token, then uncomment.
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "YOUR_TOKEN"}'></script>
   -->
+  <ClientRouter />
 </head>
 <body class="ds-nocturne">
   <header class="nav site-nav">
@@ -60,5 +64,6 @@ const nav = [
     <span class="spacer"></span>
     <span>Three Guys Radio · Chicago suburbs</span>
   </footer>
+  <MiniPlayer />
 </body>
 </html>

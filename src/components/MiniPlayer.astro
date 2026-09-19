@@ -1,0 +1,206 @@
+---
+// One audio element for the whole site. Survives navigation via transition:persist.
+---
+<div class="mini" data-mini transition:persist="tgb-mini">
+  <button class="btn btn-primary btn-icon mini-play" type="button" data-mini-toggle aria-label="Play or pause">
+    <svg width="13" height="13" viewBox="0 0 12 12" aria-hidden="true" data-mini-icon-play><polygon points="2,0.5 11,6 2,11.5" fill="currentColor"></polygon></svg>
+    <svg width="13" height="13" viewBox="0 0 12 12" aria-hidden="true" data-mini-icon-pause hidden><rect x="2" y="1" width="3" height="10" fill="currentColor"></rect><rect x="7" y="1" width="3" height="10" fill="currentColor"></rect></svg>
+  </button>
+
+  <div class="mini-body">
+    <div class="mini-top">
+      <a class="mini-title" href="/" data-mini-title>Nothing playing</a>
+      <span class="mini-chapter" data-mini-chapter></span>
+    </div>
+    <div class="mini-track" data-mini-track role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
+      <div class="mini-fill" data-mini-fill></div>
+    </div>
+  </div>
+
+  <div class="mini-times">
+    <span data-mini-current>0:00</span><span data-mini-total>0:00</span>
+  </div>
+
+  <button class="btn btn-ghost btn-icon mini-close" type="button" data-mini-close aria-label="Close player">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"/></svg>
+  </button>
+
+  <audio data-mini-audio preload="metadata"></audio>
+</div>
+
+<script>
+  // Guarded: transition:persist keeps the DOM, but this script tag re-runs on
+  // every navigation. Initialise once, then only rebind page-level controls.
+  if (!window.TGB) {
+    const root = document.querySelector('[data-mini]');
+    const audio = root.querySelector('[data-mini-audio]');
+    const fill = root.querySelector('[data-mini-fill]');
+    const track = root.querySelector('[data-mini-track]');
+    const cur = root.querySelector('[data-mini-current]');
+    const tot = root.querySelector('[data-mini-total]');
+    const title = root.querySelector('[data-mini-title]');
+    const chapLabel = root.querySelector('[data-mini-chapter]');
+    const iPlay = root.querySelector('[data-mini-icon-play]');
+    const iPause = root.querySelector('[data-mini-icon-pause]');
+
+    const fmt = (s) => {
+      s = Math.max(0, Math.round(s || 0));
+      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60;
+      return (h ? h + ':' + String(m).padStart(2, '0') : String(m)) + ':' + String(x).padStart(2, '0');
+    };
+
+    let meta = { key: '', chapters: [] };
+
+    const save = () => {
+      if (!meta.key || !audio.currentTime) return;
+      try {
+        localStorage.setItem('tgb:pos:' + meta.key, String(Math.floor(audio.currentTime)));
+        localStorage.setItem('tgb:last', JSON.stringify({ ...meta, at: Math.floor(audio.currentTime) }));
+      } catch {}
+    };
+
+    const paint = () => {
+      const d = audio.duration || meta.seconds || 0;
+      const t = audio.currentTime;
+      if (d) fill.style.width = (t / d) * 100 + '%';
+      cur.textContent = fmt(t);
+      tot.textContent = fmt(d);
+      track.setAttribute('aria-valuemax', String(Math.round(d)));
+      track.setAttribute('aria-valuenow', String(Math.round(t)));
+
+      let active = null;
+      for (const c of meta.chapters) if (c.start <= t) active = c;
+      chapLabel.textContent = active ? active.title : '';
+      document.querySelectorAll('[data-seek]').forEach((b) => {
+        b.closest('li')?.classList.toggle('is-current', !!active && Number(b.dataset.seek) === active.start);
+        b.classList.toggle('is-current', !!active && Number(b.dataset.seek) === active.start);
+      });
+      document.querySelectorAll('[data-page-play]').forEach((b) => {
+        b.dataset.state = (!audio.paused && b.dataset.pagePlay === meta.key) ? 'playing' : 'paused';
+      });
+      document.querySelectorAll('[data-rate]').forEach((b) => {
+        b.classList.toggle('is-current', Number(b.dataset.rate) === audio.playbackRate);
+      });
+      const rs = document.querySelector('[data-resume]');
+      if (rs && !audio.paused && rs.dataset.key === meta.key) rs.hidden = true;
+    };
+
+    window.TGB = {
+      // Called by any page that wants audio: episode page, home, Basement Tapes.
+      load(next, at, autoplay) {
+        if (next.key !== meta.key) {
+          meta = { chapters: [], ...next };
+          audio.src = next.src;
+          title.textContent = next.title;
+          title.href = next.href || '/';
+          root.setAttribute('data-active', '');
+          if (at == null) {
+            try { at = Number(localStorage.getItem('tgb:pos:' + next.key)) || 0; } catch { at = 0; }
+          }
+          audio.currentTime = at || 0;
+        } else if (at != null) {
+          audio.currentTime = at;
+        }
+        if (autoplay !== false) audio.play().catch(() => {});
+        paint();
+      },
+      toggle() { audio.paused ? audio.play().catch(() => {}) : audio.pause(); },
+      seek(t) { audio.currentTime = t; paint(); },
+      rate(r) { audio.playbackRate = r; audio.defaultPlaybackRate = r; paint(); },
+      get key() { return meta.key; },
+      get paused() { return audio.paused; },
+    };
+
+    root.querySelector('[data-mini-toggle]').addEventListener('click', () => window.TGB.toggle());
+    root.querySelector('[data-mini-close]').addEventListener('click', () => {
+      audio.pause(); save(); root.removeAttribute('data-active');
+    });
+    track.addEventListener('click', (e) => {
+      const r = track.getBoundingClientRect();
+      const d = audio.duration || meta.seconds || 0;
+      if (d) window.TGB.seek(((e.clientX - r.left) / r.width) * d);
+    });
+    track.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { window.TGB.seek(audio.currentTime + 15); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { window.TGB.seek(audio.currentTime - 15); e.preventDefault(); }
+    });
+
+    audio.addEventListener('play', () => { iPlay.hidden = true; iPause.hidden = false; paint(); });
+    audio.addEventListener('pause', () => { iPlay.hidden = false; iPause.hidden = true; save(); paint(); });
+    audio.addEventListener('timeupdate', paint);
+    audio.addEventListener('loadedmetadata', paint);
+
+    let tick = 0;
+    audio.addEventListener('timeupdate', () => {
+      if (Date.now() - tick < 4000) return;
+      tick = Date.now(); save();
+    });
+    window.addEventListener('pagehide', save);
+
+    // Lock-screen and headphone controls.
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('play', () => audio.play());
+      navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+      navigator.mediaSession.setActionHandler('seekbackward', () => window.TGB.seek(audio.currentTime - 15));
+      navigator.mediaSession.setActionHandler('seekforward', () => window.TGB.seek(audio.currentTime + 30));
+    }
+
+    // Bind whatever controls the newly-arrived page has. Runs on first load and
+    // after every client-side navigation.
+    const bindPage = () => {
+      document.querySelectorAll('[data-page-play]').forEach((b) => {
+        if (b.dataset.bound) return;
+        b.dataset.bound = '1';
+        b.addEventListener('click', () => {
+          const d = JSON.parse(b.dataset.episode);
+          if (window.TGB.key === d.key) window.TGB.toggle();
+          else window.TGB.load(d, null, true);
+        });
+      });
+      document.querySelectorAll('[data-seek]').forEach((b) => {
+        if (b.dataset.bound) return;
+        b.dataset.bound = '1';
+        b.addEventListener('click', () => {
+          const host = b.closest('[data-episode]');
+          const d = JSON.parse(host.dataset.episode);
+          window.TGB.load(d, Number(b.dataset.seek), true);
+        });
+      });
+      document.querySelectorAll('[data-rate]').forEach((b) => {
+        if (b.dataset.bound) return;
+        b.dataset.bound = '1';
+        b.addEventListener('click', () => window.TGB.rate(Number(b.dataset.rate)));
+      });
+      // Resume bar on the episode page: offer the saved position rather than
+      // silently jumping there.
+      const epHost = document.querySelector('[data-episode]');
+      const resume = document.querySelector('[data-resume]');
+      if (epHost && resume && !resume.dataset.bound) {
+        resume.dataset.bound = '1';
+        const d = JSON.parse(epHost.dataset.episode);
+        resume.dataset.key = d.key;
+        let saved = 0;
+        try { saved = Number(localStorage.getItem('tgb:pos:' + d.key)) || 0; } catch {}
+        const playingThis = window.TGB.key === d.key && !window.TGB.paused;
+        if (!playingThis && saved > 30 && (!d.seconds || saved < d.seconds - 30)) {
+          resume.hidden = false;
+          resume.querySelector('[data-resume-go]').textContent = 'Resume at ' + fmt(saved);
+        }
+        resume.querySelector('[data-resume-go]').addEventListener('click', () => {
+          resume.hidden = true; window.TGB.load(d, saved, true);
+        });
+        resume.querySelector('[data-resume-dismiss]').addEventListener('click', () => {
+          resume.hidden = true;
+          try { localStorage.removeItem('tgb:pos:' + d.key); } catch {}
+        });
+      }
+      const t = new URLSearchParams(location.search).get('t');
+      const host = document.querySelector('[data-episode]');
+      if (t && host) window.TGB.load(JSON.parse(host.dataset.episode), Number(t), true);
+      paint();
+    };
+
+    bindPage();
+    document.addEventListener('astro:page-load', bindPage);
+  }
+</script>

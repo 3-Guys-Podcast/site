@@ -56,10 +56,12 @@ const entries = (await getTapes()).map((t) => ({
 </Base>
 
 <script>
+  const initTapes = () => {
   const input = document.querySelector('[data-tape-search]');
   const rows = [...document.querySelectorAll('.tape')];
   const count = document.querySelector('[data-tape-count]');
-  if (input) {
+  if (input && !input.dataset.bound) {
+    input.dataset.bound = '1';
     input.addEventListener('input', () => {
       const q = input.value.trim().toLowerCase();
       let n = 0;
@@ -71,4 +73,7 @@ const entries = (await getTapes()).map((t) => ({
       count.textContent = n + (n === 1 ? ' record' : ' records');
     });
   }
+  };
+  initTapes();
+  document.addEventListener('astro:page-load', initTapes);
 </script>
