@@ -1,0 +1,74 @@
+---
+// Basement Tapes. Built entirely from music-tagged chapters in the podcast feed.
+// Adjust the Base layout import below if your layout lives elsewhere.
+import Base from '../layouts/Base.astro';
+import { getTapes, fmtTime } from '../lib/tapes.js';
+import '../styles/tapes.css';
+
+const entries = (await getTapes()).map((t) => ({
+  ...t,
+  at: fmtTime(t.seconds),
+  href: '/episodes/' + t.episode + '/?t=' + t.seconds,
+  search: [t.artist, t.song, t.release, t.pickedBy, t.note].join(' ').toLowerCase(),
+}));
+---
+<Base title="Basement Tapes" description="Every record that has come up on the show, and the moment it did." page="tapes">
+  <section class="pad">
+    <div class="tapes-head">
+      <div>
+        <h1>Basement Tapes</h1>
+        <p class="lead narrow">Every record that has come up on the show, and the moment it did. Each one jumps straight to that point in the episode.</p>
+      </div>
+      <div class="field tapes-search">
+        <label for="tape-q">Search</label>
+        <input class="input" id="tape-q" type="search" placeholder="Artist, album, who brought it up" data-tape-search autocomplete="off">
+      </div>
+    </div>
+
+    <div class="tapes-count">
+      <span data-tape-count>{entries.length} {entries.length === 1 ? 'record' : 'records'}</span>
+      <span class="rule"></span>
+    </div>
+
+    {entries.length === 0 ? (
+      <div class="tapes-empty">
+        <h4>Nothing here yet</h4>
+        <p>Tag a chapter with an <code>artist</code> field and it appears here on the next build.</p>
+      </div>
+    ) : (
+      <div>
+        {entries.map((t) => (
+          <a class="tape" href={t.href} data-search={t.search}>
+            <span class="tape-at">EP {t.episodeNum} · {t.at}</span>
+            <span class="tape-main">
+              <span class="tape-title">{t.song || t.artist}</span>
+              <span class="tape-artist">{t.artist}{t.release ? ' · ' + t.release : ''}</span>
+              {t.note && <span class="tape-note">{t.note}</span>}
+            </span>
+            <span class="tape-by">{t.pickedBy && <span class="tag tag-neutral">{t.pickedBy}</span>}</span>
+          </a>
+        ))}
+      </div>
+    )}
+
+    <p class="tapes-foot">Missing something we played? <a href="/submit/">Tell us</a>.</p>
+  </section>
+</Base>
+
+<script>
+  const input = document.querySelector('[data-tape-search]');
+  const rows = [...document.querySelectorAll('.tape')];
+  const count = document.querySelector('[data-tape-count]');
+  if (input) {
+    input.addEventListener('input', () => {
+      const q = input.value.trim().toLowerCase();
+      let n = 0;
+      rows.forEach((r) => {
+        const hit = !q || r.dataset.search.includes(q);
+        r.hidden = !hit;
+        if (hit) n++;
+      });
+      count.textContent = n + (n === 1 ? ' record' : ' records');
+    });
+  }
+</script>

@@ -1,0 +1,23 @@
+/* Basement Tapes — scoped to this page. Uses the same tokens as the rest of the
+   site; defines nothing global so it cannot collide with your edits. */
+.tapes-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); gap: var(--space-8); align-items: end; margin-bottom: var(--space-8); }
+.tapes-search { margin: 0; }
+.tapes-count { display: flex; align-items: baseline; gap: var(--space-4); margin-bottom: var(--space-4); }
+.tapes-count .rule { flex: 1; height: 1px; min-width: 20px; background: var(--color-divider); display: block; }
+.tape { display: grid; grid-template-columns: 130px minmax(0, 1fr) 110px; gap: var(--space-6); padding: var(--space-6) 0; border-bottom: 1px solid var(--color-divider); text-decoration: none; color: inherit; align-items: baseline; }
+.tape:hover { background: var(--color-surface); }
+.tape-at { font-size: 12px; color: var(--color-accent-300); font-variant-numeric: tabular-nums; }
+.tape-main { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.tape-title { font-size: 17px; }
+.tape-artist { font-size: 13px; color: var(--color-neutral-400); }
+.tape-note { font-size: 13px; color: var(--color-neutral-400); max-width: 46em; text-wrap: pretty; }
+.tape-by { text-align: right; }
+.tapes-empty { border: 1px dashed var(--color-divider); border-radius: var(--radius-md); padding: var(--space-8); max-width: 44em; }
+.tapes-empty h4 { margin: 0 0 var(--space-3); }
+.tapes-foot { margin-top: var(--space-6); font-size: 11px; color: var(--color-neutral-400); }
+
+@media (max-width: 680px) {
+  .tapes-head { grid-template-columns: minmax(0, 1fr); gap: var(--space-6); }
+  .tape { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); padding: var(--space-6) 0; min-height: 48px; }
+  .tape-by { text-align: left; }
+}
