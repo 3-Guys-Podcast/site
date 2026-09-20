@@ -34,29 +34,72 @@ function pick(block, tag) {
   return m ? decode(m[1]) : '';
 }
 
+/* Podbean's chapter editor is a form: start time and title, nothing else. So
+   everything the tapes page needs is encoded in the TITLE, which is the one field
+   that always survives. The convention:
+
+     ♪ Artist — Song
+     ♪ Artist — Song (Clint)
+     ♪ Artist — Song [Album, Year]
+     ♪ Artist — Song [Album, Year] (Clint)
+
+   Reads fine as a chapter title in Apple Podcasts, and parses here. Anything
+   richer — a sentence about why it came up, a link — goes in tape-notes.json.
+
+   PICKERS is the guard that makes real song titles safe. A trailing parenthetical
+   is only treated as "who picked it" when its contents are names from this list;
+   otherwise it stays part of the song. That keeps "Alive (Live)" and
+   "(Don't Fear) The Reaper" intact. Add guests here when they pick something. */
+
+export const PICKERS = ['Chris', 'Clint', 'Nick', 'Pepper'];
+
+const PICKER_SET = new Set(PICKERS.map((n) => n.toLowerCase()));
+
+// "Clint" / "Nick & Pepper" / "Chris, Clint" — every name must be known.
+function asPickers(s) {
+  const names = String(s).split(/\s*(?:,|&|\band\b)\s*/i).map((n) => n.trim()).filter(Boolean);
+  if (!names.length) return '';
+  return names.every((n) => PICKER_SET.has(n.toLowerCase())) ? names.join(' & ') : '';
+}
+
 function parseTape(c) {
   const rawTitle = String(c.title || '');
-  const flagged = NOTE.test(rawTitle);
-  if (!c.artist && !flagged) return null;
+  if (!NOTE.test(rawTitle) && !c.artist) return null;
 
-  let artist = c.artist ? String(c.artist) : '';
-  let song = c.song || c.track || '';
-  if (!artist || !song) {
-    const bare = rawTitle.replace(NOTE, '');
-    const split = bare.split(/\s+[\u2014\u2013-]\s+/);
-    if (!artist) artist = (split[0] || bare).trim();
-    if (!song) song = split.slice(1).join(' \u2014 ').trim();
+  let body = rawTitle.replace(NOTE, '').trim();
+  let pickedBy = '';
+  let release = '';
+
+  // Only a TRAILING parenthetical, and only if it is a known picker. Anything
+  // else — "(Live)", "(Remastered)", a parenthetical mid-title — is left alone.
+  const by = body.match(/\s*\(([^()]{1,40})\)\s*$/);
+  if (by) {
+    const names = asPickers(by[1]);
+    if (names) { pickedBy = names; body = body.slice(0, by.index).trim(); }
   }
+
+  // Only a TRAILING bracket group is the release. A bracket mid-title stays put.
+  const rel = body.match(/\s*\[([^\[\]]{1,80})\]\s*$/);
+  if (rel) { release = rel[1].trim(); body = body.slice(0, rel.index).trim(); }
+
+  // Artist and song split on the FIRST spaced em, en, or hyphen dash, so a dash
+  // inside the song title does not move the split.
+  const cut = body.match(/\s+[\u2014\u2013-]\s+/);
+  const artistRaw = cut ? body.slice(0, cut.index) : body;
+  const songRaw = cut ? body.slice(cut.index + cut[0].length) : '';
+
   return {
-    artist,
-    song: String(song || ''),
-    release: String(c.release || c.album || ''),
-    pickedBy: String(c.pickedBy || c.by || ''),
+    artist: (c.artist ? String(c.artist) : artistRaw).trim(),
+    song: String(c.song || c.track || songRaw).trim(),
+    release: String(c.release || c.album || release),
+    pickedBy: String(c.pickedBy || c.by || pickedBy),
     note: String(c.note || ''),
     link: String(c.url || ''),
     seconds: Math.round(Number(c.startTime) || 0),
   };
 }
+
+import notes from '../data/tape-notes.json';
 
 let cache = null;
 
@@ -107,6 +150,9 @@ export async function getTapes() {
       }));
   }));
 
-  cache = nested.flat().sort((a, b) => b.sortDate - a.sortDate || a.seconds - b.seconds);
+  cache = nested
+    .flat()
+    .map((t) => ({ ...t, ...(notes[t.episode + '@' + t.seconds] || {}) }))
+    .sort((a, b) => b.sortDate - a.sortDate || a.seconds - b.seconds);
   return cache;
 }

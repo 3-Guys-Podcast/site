@@ -1,0 +1,12 @@
+{
+  "_comment": "Optional notes for Basement Tapes entries. Keys are \"<episode-slug>@<startTimeInSeconds>\"; the slug is the last path segment of the episode's URL on the site, the seconds are the chapter's start time. Values override anything parsed from the chapter title (note, link, release, pickedBy).",
+  "hows-the-baby-business@2837": {
+    "note": "A coworker sent Clint the TikTok version to sing with his students, right after the table got nostalgic about life before on-demand TV."
+  },
+  "hows-the-baby-business@3190": {
+    "note": "Pepper and Nick once sang it at a karaoke Halloween party dressed as Dolly and Kenny."
+  },
+  "hows-the-baby-business@8621": {
+    "note": "Nick asked Chris for the one song that puts him in a good mood every time, and it closed out the night."
+  }
+}

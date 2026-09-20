@@ -54,27 +54,36 @@ and has **no npm dependencies and no import of `feed.js`**. That is deliberate �
 means whatever the user has done to the feed parser or stylesheet, this cannot
 break it. Do not "clean it up" by making it import `feed.js`.
 
-**Where the data comes from:** music-tagged chapters in the Podcasting 2.0 chapter
-files the user already uploads to Podbean. A chapter counts as music if it has an
-`artist` field, or if its title starts with ♪. The extra keys are ignored by Apple
-and Podbean and read by the site:
+**Where the data comes from — read this carefully, it was revised once.**
 
-```json
-{
-  "startTime": 5100,
-  "title": "♪ Nirvana — Come As You Are",
-  "artist": "Nirvana",
-  "song": "Come As You Are",
-  "release": "Nevermind, 1991",
-  "pickedBy": "Nick",
-  "note": "One sentence on why it came up."
-}
+Podbean's chapter editor is a **form**: start time and title, and that is all. It
+generates the `podcast:chapters` JSON itself, so extra keys cannot be injected. An
+earlier version of this patch assumed an uploadable JSON file with `artist` /
+`pickedBy` / `note` fields. **That was wrong and has been reworked.**
+
+Everything now rides in the **chapter title**, the one field that always survives:
+
+```
+♪ Artist — Song [Album, Year] (Host who picked it)
 ```
 
-`CHAPTERS-PROMPT.md` (in the patch and in the repo) is the prompt Chris pastes with
-a transcript to generate these. One file, uploaded once, produces three things:
-chapter navigation in podcast apps, the episode page's topic list, and the Basement
-Tapes entry.
+```
+51:30   ♪ Steely Dan — Deacon Blues [Aja, 1977] (Clint)
+1:25:00 ♪ Nirvana — Come As You Are (Nick)
+```
+
+The ♪ prefix marks the chapter as music. `[…]` and `(…)` are optional and stripped
+before the artist/song split on an em dash. `parseTape()` in `tapes.js` does this;
+it still honours real `artist`/`song`/`note` keys if a future host ever supports
+them, so the code works either way.
+
+**Free-form notes** have nowhere to live in Podbean, so they go in
+`src/data/tape-notes.json` in the repo, keyed `"<episode-slug>@<seconds>"`. That
+file is merged over the parsed values and **must exist** (`{}` is fine) — the page
+imports it. It is the one place Chris types tapes data by hand, and it is optional.
+
+`CHAPTERS-PROMPT.md` is the prompt Chris pastes with a transcript; it outputs the
+list he types into Podbean.
 
 Links are built as `/episodes/<slug>/?t=<seconds>`. If the player does not read
 `?t=` yet, the two-line fix is in the patch README.
