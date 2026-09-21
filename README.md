@@ -51,7 +51,7 @@ The build fetches the live feed, so you need to be online.
 
 ### Adding a blog post
 
-Create `src/content/blog/my-post.md`:
+Create `src/content/blog/my-post.md` (`summary`, `author`, `tags`, and `draft: true` are optional):
 
 ```markdown
 ---
