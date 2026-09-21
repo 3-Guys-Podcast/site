@@ -14,7 +14,7 @@ At some point one of us said someone should record this. Why not? And if nothing
 
 ## Who's at the table
 
-Nick started out in personal training and now sells freight security, which is a real industry and he'll explain it if you ask. Clint teaches grade school music and plays jazz, and he keeps his classroom interesting with a cast of characters that would concern a licensed professional. I spent thirty years on ambulances and fire engines, then went back to school for nursing at 55.
+Nick works in the freight industry. Clint works in education and plays jazz, which explains why there is always a song. I spent thirty years on ambulances and fire engines, then went back to school for nursing at 55.
 
 Nick's wife Pepper has been our friend for just as long as we've known each other. She was the first guest on the show, and she keeps coming back, so some weeks the title is a lie and it's three guys and a Pepper. That's fine with us.
 
