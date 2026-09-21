@@ -8,7 +8,7 @@ tags: [the show, homework]
 
 We called the first episode "No One Asked Us to Do This" because nobody did. Not a single person. There was no pitch, no audience, and no plan for what the show would be about. We are three regular guys from the Chicago suburbs with no particular reason to be on a microphone, and we know it.
 
-What we had was the conversation. For twenty some years, wherever the three of us ended up- a kitchen, a campfire, somebody's driveway at the end of a party- it turned into the same thing. Hours of good conversation. Somebody's kid is leaving for college, somebody hit a deer at five in the morning, somebody read an interesting book, or they just wanted to pontificate. Then everybody goes home, and by the next morning most of it is gone.
+What we had was the conversation. For twenty some years, wherever the three of us ended up - a kitchen, a campfire, somebody's driveway at the end of a party - it turned into the same thing. Hours of good conversation. Somebody's kid is leaving for college, somebody hit a deer at five in the morning, somebody read an interesting book, or they just wanted to pontificate. Then everybody goes home, and by the next morning most of it is gone.
 
 At some point one of us said someone should record this. Why not? And if nothing else, our kids will have our voices someday. So we bought some microphones, set them up in the basement, and hit the button. The recording was a way to keep the conversation. It was also a reason to keep having it. Once the show existed, we had to show up.
 
