@@ -9,6 +9,9 @@ const entries = (await getTapes()).map((t) => ({
   ...t,
   at: fmtTime(t.seconds),
   href: '/episodes/' + t.episode + '/?t=' + t.seconds,
+  // The card plays the music: the saved link from tape-notes.json, or a YouTube
+  // search for artist + song until someone saves a real one.
+  music: t.link || 'https://www.youtube.com/results?search_query=' + encodeURIComponent([t.artist, t.song].filter(Boolean).join(' ')),
   search: [t.artist, t.song, t.release, t.pickedBy, t.note].join(' ').toLowerCase(),
 }));
 ---
@@ -17,7 +20,7 @@ const entries = (await getTapes()).map((t) => ({
     <div class="tapes-head">
       <div>
         <h1>Basement Tapes</h1>
-        <p class="lead narrow">Every record that has come up on the show, and the moment it did. Each one jumps straight to that point in the episode.</p>
+        <p class="lead narrow">Every record that has come up on the show. Click one to hear it, or the episode time to hear why we played it.</p>
       </div>
       <div class="field tapes-search">
         <label for="tape-q">Search</label>
@@ -38,15 +41,15 @@ const entries = (await getTapes()).map((t) => ({
     ) : (
       <div>
         {entries.map((t) => (
-          <a class="tape" href={t.href} data-search={t.search}>
-            <span class="tape-at">EP {t.episodeNum} · {t.at}</span>
+          <div class="tape" data-search={t.search}>
+            <a class="tape-at" href={t.href} title={'Hear it in episode ' + t.episodeNum}>EP {t.episodeNum} · {t.at}</a>
             <span class="tape-main">
-              <span class="tape-title">{t.song || t.artist}</span>
+              <a class="tape-title tape-play" href={t.music} target="_blank" rel="noopener">{t.song || t.artist}</a>
               <span class="tape-artist">{t.artist}{t.release ? ' · ' + t.release : ''}</span>
               {t.note && <span class="tape-note">{t.note}</span>}
             </span>
             <span class="tape-by">{t.pickedBy && <span class="tag tag-neutral">{t.pickedBy}</span>}</span>
-          </a>
+          </div>
         ))}
       </div>
     )}

@@ -4,11 +4,17 @@
 .tapes-search { margin: 0; }
 .tapes-count { display: flex; align-items: baseline; gap: var(--space-4); margin-bottom: var(--space-4); }
 .tapes-count .rule { flex: 1; height: 1px; min-width: 20px; background: var(--color-divider); display: block; }
-.tape { display: grid; grid-template-columns: 130px minmax(0, 1fr) 110px; gap: var(--space-6); padding: var(--space-6) 0; border-bottom: 1px solid var(--color-divider); text-decoration: none; color: inherit; align-items: baseline; }
+.tape { position: relative; display: grid; grid-template-columns: 130px minmax(0, 1fr) 110px; gap: var(--space-6); padding: var(--space-6) 0; border-bottom: 1px solid var(--color-divider); text-decoration: none; color: inherit; align-items: baseline; }
 .tape:hover { background: var(--color-surface); }
-.tape-at { font-size: 12px; color: var(--color-accent-300); font-variant-numeric: tabular-nums; }
+.tape-at { position: relative; z-index: 1; text-decoration: none; font-size: 12px; color: var(--color-accent-300); font-variant-numeric: tabular-nums; }
 .tape-main { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
 .tape-title { font-size: 17px; }
+/* The song title's link covers the whole card; the episode time sits above it. */
+.tape-play { color: inherit; text-decoration: none; }
+.tape-play::after { content: ''; position: absolute; inset: 0; }
+.tape-play:focus-visible { outline: none; }
+.tape:has(.tape-play:focus-visible) { outline: 2px solid var(--color-accent-300); outline-offset: 2px; }
+.tape-at:hover, .tape-at:focus-visible { text-decoration: underline; }
 .tape-artist { font-size: 13px; color: var(--color-neutral-400); }
 .tape-note { font-size: 13px; color: var(--color-neutral-400); max-width: 46em; text-wrap: pretty; }
 .tape-by { text-align: right; }
